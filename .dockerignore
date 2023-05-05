@@ -1,0 +1,10 @@
+# JS stuff
+node_modules
+myenv
+# Dev stuff
+.git
+.gitignore
+LICENSE
+README.md
+.vscode
+migraions

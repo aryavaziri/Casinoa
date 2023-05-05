@@ -1,0 +1,76 @@
+.card_game {
+    font-family: monospace;
+    width: 100%;
+    background-color: rgb(218, 218, 218);
+    border-radius: 1vh;
+    box-shadow: 0.2vh 0.2vh 4vh 0.1vh rgba(82, 82, 82, 0.779);
+    /* box-shadow: 2% 4% 8%  2% rgba(82, 82, 82, 0.779); */
+    position: relative;
+    aspect-ratio: 0.64;
+    margin: 5px;
+    perspective: 500px;	
+    overflow: hidden;
+}
+.card_game>*{
+    position: absolute;
+    /* left: 0;
+    top: 0; */ 
+    backface-visibility: hidden;
+}
+
+.card_game.show>img{transform: rotateY(180deg);}
+.card_game.show>div{transform: rotateY(0deg);}
+
+.card_game.hide>img{transform: rotateY(0deg);}
+.card_game.hide>div{transform: rotateY(180deg);}
+
+.card_game>img {
+    height: 100%;
+    width: 100%;
+    transition-delay: 0.1s;
+}
+
+/* .card_game>div {
+    transform: rotateY(180deg);
+    transition-delay: 0.1s;
+    backface-visibility: hidden;
+}
+
+.card_game>div:nth-of-type(1)>span>img {
+    padding-left: 2px;
+}
+
+.card_game>div:nth-of-type(1)>span {
+    position: absolute;
+    font-weight: bolder;
+    width: 20%;
+    text-align: center;
+    display: block;
+    font-size: 2vw;
+    line-height: 1.2rem;
+    letter-spacing: -3px;
+}
+
+.card_game>div:nth-of-type(1)>span:nth-of-type(1) {
+    top: 4%;
+    left: 5%;
+}
+
+
+.card_game>div:nth-of-type(1)>span:nth-of-type(2) {
+    bottom: 4%;
+    right: 5%;
+    transform: rotateZ(180deg);
+}
+
+.card_game>div:nth-of-type(1)>span>img {
+    width: 100%;
+    background-size: contain;
+}
+
+.card_game>div:nth-of-type(1)>img {
+    position: absolute;
+    left: 25%;
+    top: 32%;
+    width: 50%;
+} */

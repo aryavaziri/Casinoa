@@ -1,0 +1,25 @@
+WINDOWS:
+    Backend:
+        pip install virtualenv ; virtualenv myenv ; Set-ExecutionPolicy Unrestricted -Scope Process;.\myenv\Scripts\activate
+
+        pip install --upgrade pip -r backend\requirements.txt
+
+        python backend\manage.py runserver 0.0.0.0:8000
+        python manage.py runserver 0.0.0.0:8000
+
+    Frontend:
+        cd Frontend;npm i;npm start
+
+
+git clone https://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@github.com/aryavaziri/casinoa_dev.git
+git pull https://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@github.com/aryavaziri/casinoa_dev.git
+From LLB
+
+ssh root@172.104.226.97
+
+ssh root@78.135.89.244
+
+daphne -b 0.0.0.0 backend.asgi:application
+
+python data_loader.py --dir data/books --redis redis://default:st9JbKIVx3I2pzXyr0zAQNOBuwM3Zrxe@redis-16850.c253.us-central1-1.gce.cloud.redislabs.com:16850/
+r = redis.Redis(host='redis://default:st9JbKIVx3I2pzXyr0zAQNOBuwM3Zrxe@redis-16850.c253.us-central1-1.gce.cloud.redislabs.com', port=16850, db=0)`

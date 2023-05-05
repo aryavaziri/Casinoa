@@ -1,0 +1,54 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  redis:
+    image: redis
+    command: redis-server
+    ports:
+      - "6379:6379"
+  django_daphne:
+    volumes:
+      - static:/backend/static/
+      - ./backend:/backend
+    env_file:
+      - .env
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+  nginx:
+    environment:
+      - CHOKIDAR_USEPOLLING=true      
+    volumes:
+      - static:/backend/static
+    build: ./nginx-node
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/frontend
+      - node_modules:/frontend/node_modules/
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - django_daphne
+
+volumes:
+  node_modules:
+  static:
+  postgres_data:

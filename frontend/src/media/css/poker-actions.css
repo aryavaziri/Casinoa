@@ -1,0 +1,21 @@
+:root {
+  --fold: rgb(192, 192, 192); 
+  --check: rgb(0, 153, 255);
+  --call: rgb(89, 210, 89);
+  --raise: orange;
+  --allin: tomato;
+}
+.poker-actions{
+  width: 100%;
+  margin: 0;
+  height: 15vh;
+  position: absolute;
+  top: 80%;right: 0;
+  z-index: 300;
+
+}
+.poker-actions .action-btn>*{
+  width: 120px;
+  margin: auto;
+  /* background-color: red; */
+}
