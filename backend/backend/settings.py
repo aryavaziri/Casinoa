@@ -129,7 +129,7 @@ DATABASES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost", "http://143.42.54.186", "http://172.104.226.97","https://localhost", "https://143.42.54.186",]
+CSRF_TRUSTED_ORIGINS = ["http://www.casinoa.nl", "https://www.casinoa.nl", "http://localhost", "http://143.42.54.186", "http://172.104.226.97","https://localhost", "https://143.42.54.186",]
 
 INTERNAL_IPS = [
     "127.0.0.1",

@@ -1,8 +1,0 @@
-SECRET_KEY=djangoSecretKey
-DEBUG=1
-REDIS=redis
-REDIS_CLOUD=Your redis server address
-SUPER_USER_EMAIL=admin@email.com
-DJANGO_SUPERUSER_PASSWORD=1234
-POSTGRES_PASSWORD=postgress password
-CHOKIDAR_USEPOLLING=true
