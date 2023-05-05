@@ -26,13 +26,18 @@ services:
       - db
       - redis
   nginx:
-    environment:
-      - CHOKIDAR_USEPOLLING=true      
+    restart: unless-stopped
+    # environment:
+    #   - CERTBOT_EMAIL
+    env_file:
+      - ./ssl.env
     volumes:
-      - static:/backend/static
+      - nginx_secrets:/etc/letsencrypt
+      - ./user.d:/etc/nginx/conf.d
     build: ./nginx-node
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - frontend
   frontend:
@@ -52,3 +57,4 @@ volumes:
   node_modules:
   static:
   postgres_data:
+  nginx_secrets:
