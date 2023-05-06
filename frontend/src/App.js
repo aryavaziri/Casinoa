@@ -8,6 +8,7 @@ import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PokerScreen from "./screens/PokerScreen";
+import TestScreen from "./screens/TestScreen";
 import { hostname } from "./constants/userConstants";
 
 // const hostname = window.location.hostname + ":8000";
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/register" element={<RegisterScreen />} />
             <Route path="/profile" element={<ProfileScreen />} />
+            <Route path="/test2" element={<TestScreen />} />
             <Route path="/poker/:id" element={<PokerScreen />} />
             <Route path="/table/:id" element={<TableScreen />} />
           </Routes>

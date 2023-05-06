@@ -5,6 +5,7 @@ from base.models import Table, Game, Player
 from base.serializers import GameSerializer, TableSerializer, PlayerSerializer
 import random
 import time
+import math
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
@@ -252,4 +253,84 @@ class Poker:
             # self.newGame()
             # time.sleep(5)  #goes to the next game after 5 seconds
         async_to_sync(get_channel_layer().group_send)(str(self.table._id), {'type': 'disp'})
+
+
+
+
+    def evaluate(cards):
+        temp1=[] #sort
+        temp2=[] #count
+        temp3=[] #suits
+        temp4=[] #unique1
+        temp5=[] #unique2
+        winner=[] #winner hand cards
+
+        for card in cards:
+            x = int(math.fmod(card-1,13)+1)
+            if x==1:
+                x=14
+            temp1.append(x)
+        temp1.sort(reverse=True)
+        for card in temp1:
+            temp2.append(temp1.count(card))
+        for card in cards:
+            temp3.append(int(card/13))
+        for card in temp1:
+            if card not in temp4:
+                temp4.append(card)
+        for card in temp4:
+            x = card
+            if x==14:
+                x=1
+            temp5.append(x)
+        
+        print(temp1)
+
+        if max(temp2) == 4:
+            winner = [temp1[temp2.index(4)]]*4
+            return ["four of a kind",winner]
+        if max(temp2) == 3 and (temp2.count(3)>3 or temp2.count(2)):
+            winner = [temp1[temp2.index(3)]]*3
+            return ["full house",winner]
+
+        for suit in temp3:
+            if temp3.count(suit)>4:
+                for card in cards:
+                    if(int(card/13)==suit):
+                        winner.append(int(math.fmod(card-1,13)+1))
+                    winner.sort(reverse=True)
+                return ["flush",winner[:5]]
+        if (len(temp4)>4):
+            for i in range(len(temp4)-4):
+                if(temp4[0+i]==temp4[4+i]+4):
+                    winner = list(temp4[i:i+5])
+                    return ["straight",winner]
+                if(temp5[0+i]==temp5[4+i]+4):
+                    winner = list(temp5[i:i+5])
+                    return ["straight",winner]
+
+                
+        if max(temp2) == 3:
+            winner = [temp1[temp2.index(3)]]*3
+            for card in temp1:
+                if card not in winner and len(winner)<5:
+                    winner.append(card)
+            return ["three of a kind",winner]
+
+        if max(temp2) == 2 and temp2.count(2) > 2:
+            for i in range(len(temp1)):
+                if(temp2[i]==2):
+                    winner.append(temp1[i])
+            for card in temp1:
+                if card not in winner and len(winner)<5:
+                    winner.append(card)
+            return ["two pair",winner]
+
+        if max(temp2) == 2:
+            winner = [temp1[temp2.index(2)]]*2
+            for card in temp1:
+                if card not in winner and len(winner)<5:
+                    winner.append(card)
+            return ["pair",winner]
+        return ["high card",temp1[:5]]
 
