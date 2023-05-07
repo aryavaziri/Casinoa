@@ -264,7 +264,6 @@ class Poker:
         temp4=[] #unique1
         temp5=[] #unique2
         winner=[] #winner hand cards
-
         for card in cards:
             x = int(math.fmod(card-1,13)+1)
             if x==1:
@@ -274,7 +273,8 @@ class Poker:
         for card in temp1:
             temp2.append(temp1.count(card))
         for card in cards:
-            temp3.append(int(card/13))
+            temp3.append(int((card-1)/13)+1)
+        # temp3.sort()
         for card in temp1:
             if card not in temp4:
                 temp4.append(card)
@@ -283,8 +283,40 @@ class Poker:
             if x==14:
                 x=1
             temp5.append(x)
+        temp5.sort(reverse=True)
+
         
+        print(cards)
         print(temp1)
+        print(temp4)
+
+
+
+
+        temp6=[]
+        
+        if (set([1,10,11,12,13]).issubset(set(cards))) or (set([14,23,24,25,26]).issubset(set(cards))) or (set([27,36,37,38,39]).issubset(set(cards))) or (set([40,49,50,51,52]).issubset(set(cards))):
+            return["royal flash", [10,11,12,13,14]]
+
+        for suit in temp3:
+            if temp3.count(suit)>4:
+                print(temp3)
+                for i in range(len(temp3)):
+                    if temp3[i] is suit:
+                        temp6.append(cards[i])
+                print(temp6)
+                temp6.sort(reverse=True)
+                for i in range(len(temp6)-4):
+                    if(temp6[0+i]==temp6[4+i]+4):
+                        # winner = list(temp6[i:i+5])
+                        for card in temp6[i:i+5]:
+                            winner.append(int(math.fmod(card-1,13)+1))
+                        return ["straight flash",winner]
+
+
+        
+
+
 
         if max(temp2) == 4:
             winner = [temp1[temp2.index(4)]]*4
@@ -296,10 +328,14 @@ class Poker:
         for suit in temp3:
             if temp3.count(suit)>4:
                 for card in cards:
-                    if(int(card/13)==suit):
-                        winner.append(int(math.fmod(card-1,13)+1))
+                    if(int((card-1)/13)+1==suit):
+                        x = int(math.fmod(card-1,13)+1)
+                        if x==1:
+                            x=14
+                        winner.append(x)
                     winner.sort(reverse=True)
                 return ["flush",winner[:5]]
+
         if (len(temp4)>4):
             for i in range(len(temp4)-4):
                 if(temp4[0+i]==temp4[4+i]+4):
