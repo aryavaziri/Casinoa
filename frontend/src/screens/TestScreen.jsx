@@ -8,17 +8,15 @@ import Loader from '../components/Loader'
 import Message from '../components/Message'
 import Buyin from '../components/Buyin'
 import { useState ,useContext} from 'react'
+import Player from '../components/Player'
 
 
 function TestScreen() {
+    const gameInfo = useSelector(state => state.gameDetails)
+    const { info } = gameInfo
 
     return (
-        <Container>
-            <h1>Test</h1>
-            <ul>
-                
-            </ul>
-        </Container>
+        <Player key={info.player[0].user} options={info.player[0]}/>
     )
 }
 

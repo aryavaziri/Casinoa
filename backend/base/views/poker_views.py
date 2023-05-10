@@ -12,33 +12,45 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def getGame(request, pk):
     game = Game.objects.filter(table=pk).last()
-    serializer2 = GameSerializer(game, many=False, context={"own":request.user.id,"is_staff":request.user.is_staff})
+    serializer2 = GameSerializer(
+        game,
+        many=False,
+        context={"own": request.user.id, "is_staff": request.user.is_staff},
+    )
     return Response(serializer2.data)
 
 
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def gameEnter(request, pk):
     game = Game.objects.filter(table=pk).last()
-    serializer = GameSerializer(game, many=False, context={"own":request.user.id,"is_staff":request.user.is_staff})
+    serializer = GameSerializer(
+        game,
+        many=False,
+        context={"own": request.user.id, "is_staff": request.user.is_staff},
+    )
     return Response(serializer.data)
 
-    
-@api_view(['PUT'])
-# @permission_classes([IsAuthenticated])
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
 def newGame(request, pk):
     Poker(pk)
-    async_to_sync(get_channel_layer().group_send)(str(pk), {'type': 'disp'})
+    async_to_sync(get_channel_layer().group_send)(str(pk), {"type": "disp"})
     game = Game.objects.filter(table=pk).last()
-    serializer = GameSerializer(game, many=False, context={"own":request.user.id,"is_staff":request.user.is_staff})
+    serializer = GameSerializer(
+        game,
+        many=False,
+        context={"own": request.user.id, "is_staff": request.user.is_staff},
+    )
     return Response(serializer.data)
 
-    
-@api_view(['PUT'])
+
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def action(request, pk):
     game = Game.objects.filter(table=pk).last()
@@ -46,18 +58,24 @@ def action(request, pk):
     table = Table.objects.get(_id=pk)
     user = request.user
     new_bet = int(request.data["bet"])
-    
-    if action=="NewGame":
+
+    if action == "NewGame":
         try:
             if game.isFinished:
-                if len(table.JSON_table['online'])>1:
+                if len(table.JSON_table["online"]) > 1:
                     Poker(pk)
         except:
-            if len(table.JSON_table['online'])>1:
+            if len(table.JSON_table["online"]) > 1:
                 Poker(pk)
 
     else:
         if game is not None:
-            Poker.userAction(game.gameObject, action, user.id, new_bet)
-    serializer = GameSerializer(game, many=False, context={"own":request.user.id,"is_staff":request.user.is_staff})
+            Poker.userAction(
+                game.gameObject, action, user.id, new_bet, request.user.is_staff
+            )
+    serializer = GameSerializer(
+        game,
+        many=False,
+        context={"own": request.user.id, "is_staff": request.user.is_staff},
+    )
     return Response(serializer.data)

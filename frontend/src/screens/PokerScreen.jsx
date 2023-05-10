@@ -77,6 +77,7 @@ function PokerScreen() {
     const order = []
 
     let temp
+    let ended = info && info.isFinished
 
     useEffect(() => {
         if (socketHeader == "") { navigate("/") }
@@ -113,6 +114,7 @@ function PokerScreen() {
     const call = () => { dispatch(gameAction(id, 0, "call")) }
     const raise = () => { dispatch(gameAction(id, bet, "raise")) }
     const allin = () => { dispatch(gameAction(id, 0, "allin")) }
+    const end = () => { dispatch(gameAction(id, 0, "end")) }
     const newGame = () => { dispatch(gameAction(id, 0, "newGame")) }
     let gameDBExist = false
     if (gameInfo && info && info.JSON_ground) { gameDBExist = true }
@@ -174,7 +176,7 @@ function PokerScreen() {
                             <div className='h-100 col m-0 p-1'><Card2 num={ground[3]} /></div>
                             <div className='h-100 col m-0 p-1'><Card2 num={ground[4]} /></div>
                         </div>
-                        <div className='col-6 d-flex'>
+                        <div className='col-6 d-flex' style={{ height: "15vh" }}>
                             {/* <div className='w-50 m-0 p-1'>Players: <pre> {JSON.stringify(info.player)}</pre></div> */}
                             <div style={{ fontSize: "13px" }} className='w-25 d-flex flex-column m-0 p-1'>
                                 <span>Round: {JSON.stringify(info.round)}</span>
@@ -194,6 +196,10 @@ function PokerScreen() {
                                 <span>order: {JSON.stringify(info.JSON_data.orders)}</span>
                                 <span>online: {JSON.stringify(table.JSON_table.online)}</span>
                             </div>
+                            <div style={{ fontSize: "13px" }} className='w-25 d-flex flex-column m-0 p-1'>
+                                <span>stage winner: {JSON.stringify(info.JSON_data.stage_winner)}</span>
+                                <span>card winner: {JSON.stringify(info.JSON_data.card_winner)}</span>
+                            </div>
                         </div>
                     </div>
                 }
@@ -205,7 +211,7 @@ function PokerScreen() {
                                     info.player.map(v => {
                                         if ((v.user == val) && (v.user != userInfo.id)) {
                                             return (
-                                                <Player key={v.user} options={v} />
+                                                <Player key={v.user} options={v} ended={ended} />
                                             )
                                         }
                                     })
@@ -220,7 +226,7 @@ function PokerScreen() {
                                     info.player.map(v => {
                                         if ((v.user == val) && (v.id != userInfo.id)) {
                                             return (
-                                                <Player key={v.user} options={v} />
+                                                <Player key={v.user} options={v} ended={ended} />
                                             )
                                         }
                                     })
@@ -235,7 +241,7 @@ function PokerScreen() {
                                     info.player.map(v => {
                                         if ((v.user == val) && (v.user != userInfo.id)) {
                                             return (
-                                                <Player key={v.user} options={v} />
+                                                <Player key={v.user} options={v} ended={ended} />
                                             )
                                         }
                                     })
@@ -282,7 +288,8 @@ function PokerScreen() {
                     <Button disabled={action_turn} className=' my-1 h-25 ' onClick={() => check()}>Check</Button>
                     <Button disabled={action_turn} className=' my-1 h-25 ' onClick={() => call()}>Call</Button>
                     <Button disabled={action_turn} className=' my-1 h-25 ' onClick={() => raise()}>Raise</Button>
-                    <Button disabled={action_turn} className=' my-1 h-25 ' onClick={() => allin()}>All-in2</Button>
+                    <Button disabled={action_turn} className=' my-1 h-25 ' onClick={() => allin()}>All-in</Button>
+                    <Button disabled={action_turn} className=' my-1 h-25 ' onClick={() => end()}>End</Button>
                     <Button variant='warning' className=' m-1 h-25 ' onClick={handleShow}>LOG</Button>
                     <Button variant='warning' disabled={(process.env.NODE_ENV == "development") ? false : (gameDBExist && (!info.isFinished))} className=' my-1 h-25' onClick={() => newGame()}>New-game</Button>
                     {/* {gameDBExist && <span className='text-light'>POT:{gameInfo.info.pot}/ BET:{gameInfo.info.bet}/ STAGE:{gameInfo.info.stage}</span>} */}
@@ -299,7 +306,7 @@ function PokerScreen() {
                 <div id="me" className='col-4 d-flex justify-content-center h-100 py-0 own'>
                     {gameDBExist && info.own && info.player.map((value) => {
                         if (value.user == userInfo.id) {
-                            return (<Player key={value.user} options={info.own} />)
+                            return (<Player key={value.user} options={info.own} ended={ended} />)
                         }
                     })}
                 </div>

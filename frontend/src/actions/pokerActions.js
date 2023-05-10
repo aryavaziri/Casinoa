@@ -86,7 +86,7 @@ export const gameEnter = (id, deposite) => async (dispatch, getState) => {
 };
 
 
-export const gameAction = 
+export const gameAction =
   (id, bet, actionType) => async (dispatch, getState) => {
     // const {hostname} =useContext(MyContext)
     const myDomain = hostname;
@@ -122,6 +122,9 @@ export const gameAction =
           break;
         case "allin":
           actSwitch = "allin";
+          break;
+        case "end":
+          actSwitch = "end";
           break;
         case "newGame":
           actSwitch = "NewGame";

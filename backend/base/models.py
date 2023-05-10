@@ -49,8 +49,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+def JSON():
+    return {"winner_hand":[]}
 def data():
-    return {"ground":[0,0,0,0,0], "orders":[], "bets":[]}
+    return {"ground":[0,0,0,0,0], "orders":[], "bets":[], "winner":[],"winner_hand":[]}
 def ground():
     return {"ground":[0,0,0,0,0]}
 def table():
@@ -95,15 +97,30 @@ class Player(models.Model):
         (4, 'Raise'),
         (5, 'Allin'),
     ]
+    title = [
+        (1, 'High Card'),
+        (2, 'Pair'),
+        (3, 'Two pair'),
+        (4, 'Set'),
+        (5, 'Straight'),
+        (6, 'Flush'),
+        (7, 'Fullhouse'),
+        (8, 'Four of a kind'),
+        (9, 'Straight flush'),
+        (10, 'Royal flush'),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
     nick_name = models.CharField(max_length=200, null=True, blank=True)
     balance = models.IntegerField(null=True, default=0)
     status = models.IntegerField(null=True, choices=state, default=0, blank=True)
+    title = models.IntegerField(null=True, choices=title, default=1, blank=True)
     credit_total = models.IntegerField(default=1000, null=True)
+    JSON = models.JSONField(default=JSON)
     turn = models.BooleanField(default=False)
     dealer = models.BooleanField(default=False)
     small = models.BooleanField(default=False)
     big = models.BooleanField(default=False)
+    winner = models.BooleanField(default=False)
     bet = models.IntegerField(default=0)
     image = models.ImageField(default="/avatar1.webp", upload_to=upload_path)
     card1 = models.IntegerField(default=0)
