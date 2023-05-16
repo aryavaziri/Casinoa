@@ -22,7 +22,6 @@ class PokerConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def add_online(self):
-        print("kirekhar")
         table = Table.objects.get(_id=self.table)
 
         player = Player.objects.get(user=self.user["id"])
@@ -111,6 +110,24 @@ class PokerConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "disp",
                     "message": "Dispatch from socket",
+                }
+            )
+        )
+
+    async def system(self):
+        await self.channel_layer.group_send(
+            self.groupname,
+            {
+                "type": "finish",
+            },
+        )
+
+    async def finish(self, event):
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "finish",
+                    "message": event["systemlog"],
                 }
             )
         )

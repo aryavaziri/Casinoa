@@ -61,7 +61,7 @@ def action(request, pk):
 
     if action == "NewGame":
         try:
-            if game.isFinished:
+            if game.isFinished or request.user.is_staff:
                 if len(table.JSON_table["online"]) > 1:
                     Poker(pk)
         except:

@@ -1,6 +1,7 @@
 # from models import *
 # from serializers import *
 import datetime
+import copy
 from base.models import Table, Game, Player
 from base.serializers import GameSerializer, TableSerializer, PlayerSerializer
 import random
@@ -24,14 +25,17 @@ class Poker:
         table = Table.objects.get(_id=self.pk)
         oldGame = Game.objects.filter(table=pk).last()
         small = 0
-        table.JSON_table["online"] = [1, 4, 2, 3]  # For testing
-        table.save()
-        print("KIREKHAR2")
+        # table.JSON_table["online"] = [1, 4, 2, 3]  # For testing
+        # table.save()
         online = table.JSON_table["online"]
         new_order = []
 
         if oldGame is not None:
-            pre_small = (oldGame.small_blind)  # get ID of previous small blind on the table
+            pre_small = (
+                oldGame.small_blind
+            )  # get ID of previous small blind on the table
+            if pre_small == 0:
+                pre_small = online[0]
             for player in oldGame.player.all().order_by("joined_at"):
                 if player not in online:
                     player.credit_total += player.balance
@@ -44,15 +48,19 @@ class Poker:
                     new_order.append(user)
             try:
                 i = 0
+                print("online: ", online)
+                print("pre_small: ", pre_small)
+                print("new_order: ", new_order)
                 while i < len(online):
                     small = online[(online.index(pre_small) + 1 + i) % len(online)]
                     if new_order.count(small):
                         break
                     i += 1
+                print("small: ", small)
             except:
                 small = online[0]
                 print("EXCEPT")
-        else: ##Initialize
+        else:  ##Initialize
             small = online[0]
             for id in online:
                 player = Player.objects.get(user=id)
@@ -74,21 +82,33 @@ class Poker:
         game.pot = self.table.small * 3
         game.turn = new_order[(new_order.index(small) + 2) % len(new_order)]
         game.JSON_data["ground"] = self.ground
-        game.JSON_data["bets"] = [0] * len(new_order)
+        game.JSON_data["actions"] = [0] * len(new_order)
         game.JSON_data["playerCards"] = self.playerCards
         game.JSON_data["orders"] = new_order
-        game.JSON_data["card_winner"] = []
-        game.JSON_data["stage_winner"] = []
+        game.JSON_data["card_winner"] = [None] * len(new_order)
+        game.JSON_data["allin_pots"] = [0] * len(new_order)
+        game.JSON_data["bets"] = [0] * len(new_order)
+        game.JSON_data["bets"][new_order.index(small)] = self.table.small
+        game.JSON_data["bets"][(new_order.index(small) + 1) % len(new_order)] = (
+            self.table.small * 2
+        )
         game.JSON_data["game_winner"] = []
+        game.JSON_data["stage_pots"] = [0]
 
         for p in range(len(new_order)):
             card_winner = self.ground.copy()
-            card_winner.extend(self.playerCards[p])
-            game.JSON_data["card_winner"].append(self.evaluate(card_winner))
+            card_winner.extend(
+                self.playerCards[(p + new_order.index(small)) % len(new_order)]
+            )
+            eval = self.evaluate(card_winner)
+            game.JSON_data["card_winner"][
+                (p + new_order.index(small)) % len(new_order)
+            ] = eval
             player = Player.objects.get(
                 user=new_order[(p + new_order.index(small)) % len(new_order)]
             )
             game.player.add(player)
+            [player.title] = eval[0]
             player.small = False
             player.big = False
             player.turn = False
@@ -107,9 +127,6 @@ class Poker:
             if p == 2 % len(new_order):
                 player.turn = True
             player.balance -= player.bet
-            [player.title] = game.JSON_data["card_winner"][
-                (p + new_order.index(small)) % len(new_order)
-            ][0]
             player.JSON["winner_hand"] = self.evaluate(card_winner)[1]
             player.card1 = game.JSON_data["playerCards"][
                 (p + new_order.index(small)) % len(new_order)
@@ -118,10 +135,12 @@ class Poker:
                 (p + new_order.index(small)) % len(new_order)
             ][1]
             player.save()
+
         game.isPlayed = True
         game.gameObject = self
         # self.onFinish()
         game.save()
+        print(game.JSON_data["card_winner"])
         async_to_sync(get_channel_layer().group_send)(
             str(self.table._id), {"type": "disp"}
         )
@@ -143,6 +162,7 @@ class Poker:
 
     def userAction(self, action, userID, new_bet=0, is_staff=False):
         order = self.game.JSON_data["orders"]
+        pot = self.game.JSON_data["stage_pots"][-1]
         bet = self.game.bet
         if action == "leave":
             player = Player.objects.get(user=userID)
@@ -165,12 +185,22 @@ class Poker:
 
         if (
             (action == "check" and bet > player.bet)
-            or (action == "call" and bet == player.bet)
+            or (action == "call" and player.balance + player.bet <= bet)
+            or (action == "call" and player.bet == bet)
+            or (action == "call" and bet == 0)
             or (
                 action == "raise"
                 and (
-                    (new_bet < bet * 2)
+                    (new_bet <= bet)
                     or ((bet == 0) and (new_bet < self.table.small * 2))
+                    or (
+                        len(self.game.JSON_data["actions"])
+                        - (
+                            self.game.JSON_data["actions"].count(5)
+                            + self.game.JSON_data["actions"].count(1)
+                        )
+                        <= 1
+                    )
                 )
             )
         ):
@@ -190,20 +220,9 @@ class Poker:
                 player.bet = bet
 
             if action == "raise":
-                self.game.JSON_data["bets"] = [
-                    (i if (i == 1 or i == 5) else 0)
-                    for i in self.game.JSON_data["bets"]
-                ]
-                for i in range(len(self.game.JSON_data["bets"])):
-                    p = Player.objects.get(user=order[i])
-                    if (
-                        self.game.JSON_data["bets"][i] != 1
-                        and self.game.JSON_data["bets"][i] != 5
-                    ):
-                        p.status = 0
-                        p.save()
                 player.status = 4
                 player.balance -= new_bet - player.bet
+
                 self.game.pot += new_bet - player.bet
                 player.bet = new_bet
                 self.game.bet = new_bet
@@ -212,122 +231,157 @@ class Poker:
                 player.status = 5
                 player.bet += player.balance
                 self.game.pot += player.balance
+                if player.bet > bet:
+                    self.game.bet = player.bet
                 player.balance = 0
 
-            self.game.JSON_data["bets"][(order.index(self.game.turn))] = player.status
+            if action == "raise" or action == "allin":
+                for i in range(len(self.game.JSON_data["actions"])):
+                    p = Player.objects.get(user=order[i])
+                    if (
+                        self.game.JSON_data["actions"][i] != 1
+                        and self.game.JSON_data["actions"][i] != 5
+                        and p.bet < self.game.bet
+                    ):
+                        p.status = 0
+                        p.save()
+                        self.game.JSON_data["actions"][i] = 0
+
+            self.game.JSON_data["actions"][
+                (order.index(self.game.turn))
+            ] = player.status
+            self.game.JSON_data["bets"][(order.index(self.game.turn))] = player.bet
             self.game.save()
             player.turn = False
             player.save()
             self.after()
 
     def after(self):
-        self.game.JSON_data["stage_winner"] = []
         order = self.game.JSON_data["orders"]
-        if self.game.JSON_data["bets"].count(0):
+        if self.game.JSON_data["actions"].count(0):
             self.game.turn = order[(order.index(self.game.turn) + 1) % len(order)]
             self.game.save()
             # If person is not online, then fold him
-            print(Player.objects.get(user=self.game.turn).user.id)
-            print(self.table.JSON_table["online"])
-            print(Table.objects.get(_id=self.pk).JSON_table["online"])
-
             if (
                 Player.objects.get(user=self.game.turn).user.id
                 not in Table.objects.get(_id=self.pk).JSON_table["online"]
             ):
-                print(
-                    "------------------------------OK--------------------------------------------------------------------------"
-                )
-                # Player.objects.filter(user=self.game.turn).update(status=1)
-                # self.game.JSON_data['bets'][(order.index(self.game.turn))]=1
                 Poker.userAction(self, "fold", self.game.turn)
-            # If person is fold or allin, go to next person
+
+            # If player is fold or allin, go to next person
             while (
                 Player.objects.get(user=self.game.turn).status == 1
-                or Player.objects.get(user=self.game.turn) == 5
+                or Player.objects.get(user=self.game.turn).status == 5
             ):
                 self.game.turn = order[(order.index(self.game.turn) + 1) % len(order)]
             nextPlayer = Player.objects.get(user=self.game.turn)
             nextPlayer.turn = True
             nextPlayer.save()
             print("next player")
-        if not self.game.JSON_data["bets"].count(0):
-            for i in range(len(self.game.JSON_data["bets"])):
+        else:
+            print("next round")
+            if self.game.JSON_data["actions"].count(5):
+                for k in range(len(self.game.JSON_data["orders"])):
+                    temp_player = Player.objects.get(
+                        user=self.game.JSON_data["orders"][k]
+                    )
+                    if temp_player.status != 1:
+                        if temp_player.bet:
+                            self.game.JSON_data["allin_pots"][k] = self.game.JSON_data[
+                                "stage_pots"
+                            ][-1]
+                            for player_2 in self.game.player.all():
+                                if self.game.bet == temp_player.bet:
+                                    self.game.JSON_data["allin_pots"][k] += player_2.bet
+                                else:
+                                    self.game.JSON_data["allin_pots"][k] += min(
+                                        temp_player.bet, player_2.bet
+                                    )
+
+                    else:
+                        self.game.JSON_data["allin_pots"][k] = 0
+
+            for i in range(
+                len(self.game.JSON_data["actions"])
+            ):  ##Reseting bets list to prepare it for the next round
+                temp = Player.objects.get(user=order[i])
+                temp.bet = 0
                 if (
-                    self.game.JSON_data["bets"][i] != 1
-                    and self.game.JSON_data["bets"][i] != 5
+                    self.game.JSON_data["actions"][i] != 1
+                    and self.game.JSON_data["actions"][i] != 5
                 ):
                     # print(order[i])
-                    temp = Player.objects.get(user=order[i])
                     temp.status = 0
                     if order[i] == self.game.small_blind:
                         temp.turn = True
-                    temp.bet = 0
-                    temp.save()
-            print("next round")
-            self.game.JSON_data["bets"] = [
-                (i if (i == 1 or i == 5) else 0) for i in self.game.JSON_data["bets"]
+                temp.save()
+            self.game.JSON_data["actions"] = [
+                (i if (i == 1 or i == 5) else 0) for i in self.game.JSON_data["actions"]
             ]
+            self.game.JSON_data["stage_pots"].append(self.game.pot)
             self.game.stage += 1
-
             self.game.turn = self.game.small_blind
-            while (
-                Player.objects.get(user=self.game.turn).status == 1
-                or Player.objects.get(user=self.game.turn) == 5
-            ):
-                self.game.turn = order[(order.index(self.game.turn) + 1) % len(order)]
-
             self.game.bet = 0
+            self.game.JSON_data["bets"] = [0] * len(order)
+            self.game.save()
+            if (
+                self.game.JSON_data["actions"].count(1)
+                + self.game.JSON_data["actions"].count(5)
+                + 1
+            ) < len(self.game.JSON_data["actions"]):
+                while (
+                    Player.objects.get(user=self.game.turn).status == 1
+                    or Player.objects.get(user=self.game.turn).status == 5
+                ):
+                    self.game.turn = order[
+                        (order.index(self.game.turn) + 1) % len(order)
+                    ]
+                nextPlayer = Player.objects.get(user=self.game.turn)
+                nextPlayer.turn = True
+                nextPlayer.save()
+            else:
+                self.game.stage = 4
 
-        if self.game.stage == 1:
-            for p in range(len(order)):
-                stage_winner = self.ground[:3].copy()
-                stage_winner.extend(self.playerCards[p])
-                self.game.JSON_data["stage_winner"].append(self.evaluate(stage_winner))
+        if self.game.stage >= 1:
             self.game.JSON_ground["ground"][0] = self.game.JSON_data["ground"][0]
             self.game.JSON_ground["ground"][1] = self.game.JSON_data["ground"][1]
             self.game.JSON_ground["ground"][2] = self.game.JSON_data["ground"][2]
-        if self.game.stage == 2:
-            stage_winner = self.ground[:4].copy()
-            for p in range(len(order)):
-                stage_winner.extend(self.playerCards[p])
-                self.game.JSON_data["stage_winner"].append(self.evaluate(stage_winner))
+        if self.game.stage >= 2:
             self.game.JSON_ground["ground"][3] = self.game.JSON_data["ground"][3]
-        if self.game.stage == 3:
-            self.game.JSON_data["stage_winner"] = self.game.JSON_data["card_winner"]
+        if self.game.stage >= 3:
             self.game.JSON_ground["ground"][4] = self.game.JSON_data["ground"][4]
         if self.game.stage > 3:
-            print("NEXT GAME")
+            print("Round Finished")
+
+        if (
+            (self.game.stage > 3)
+            or self.game.JSON_data["actions"].count(1) + 1 >= self.game.player.count()
+            or self.game.JSON_data["actions"].count(1)
+            + self.game.JSON_data["actions"].count(5)
+            >= self.game.player.count()
+        ):
             self.onFinish()
 
         self.game.save()
-        self.post_action()
-
-    def post_action(self):
-        game = self.game
-        temp_fold = 0
-        for player in game.player.all():
-            if (player.status == 1) or (player.status == 5):
-                temp_fold += 1
-            if temp_fold >= game.player.count() - 1:
-                self.onFinish()
-        game.save()
         async_to_sync(get_channel_layer().group_send)(
             str(self.table._id), {"type": "disp"}
         )
 
     def onFinish(self):
         game = self.game
+        if game.JSON_data["allin_pots"].count(0) == game.player.count():
+            game.JSON_data["allin_pots"] = [game.pot] * game.player.count()
         game.isFinished = True
         game.player.filter(turn=True).update(turn=False)
         game.turn = 0
-        [winner_cards, winnerID] = self.winner()
-        game.JSON_ground["ground"] = game.JSON_data["ground"]
-        game.JSON_data["winner"] = winnerID
+        result = self.winner()
+        print("result: ", result)
+        game.JSON_data["winner"] = result
         for p in range(len(game.JSON_data["orders"])):
             player = Player.objects.get(user=game.JSON_data["orders"][p])
-            if game.JSON_data["orders"][p] in winnerID:
+            if game.JSON_data["orders"][p] in [x[0] for x in result]:
                 player.winner = True
+                player.win_amount = result[[x[0] for x in result].index(game.JSON_data["orders"][p])][1]
                 player.save()
         game.save()
         print("Next game is going to start")
@@ -338,43 +392,99 @@ class Poker:
 
     def winner(self):
         game = self.game
+        temp1 = copy.deepcopy(game.JSON_data["card_winner"])
+        for i in range(len(temp1)):
+            temp1[i].append(game.JSON_data["orders"][i])
+        for p in range(len(temp1)):
+            if game.JSON_data["actions"][p] == 1:
+                temp1[p][0] = [0]
         temp = sorted(
-            game.JSON_data["card_winner"],
+            temp1,
             key=lambda x: (x[0][0], x[1][0], x[1][1], x[1][2], x[1][3], x[1][4]),
             reverse=True,
         )
-        for p in range(len(temp)):
-            if game.JSON_data["bets"][p] == 1:
-                temp[p] = [0]
-
-        winner = []
-        winners = []
-        if [temp.count(temp[0])] == 1:
-            winner = list(
-                map(
-                    lambda x: x[1]
-                    if Player.objects.get(user=game.JSON_data["orders"][x[0]])
-                    else 0,
-                    enumerate(temp),
-                )
-            )
-        else:
-            winner = [temp[0]] * temp.count(temp[0])
-        if len(winner) == 1:
-            winners = [
-                game.JSON_data["orders"][game.JSON_data["card_winner"].index(winner[0])]
+        # print("temp: ", temp)
+        temp2 = copy.deepcopy(temp)
+        for i in range(len(temp2)):
+            quota = self.game.JSON_data["allin_pots"][
+                game.JSON_data["orders"].index(temp2[i][2])
             ]
-        else:
-            for k in range(len(game.JSON_data["orders"])):
-                if game.JSON_data["card_winner"][k] == winner[0]:
-                    winners.append(game.JSON_data["orders"][k])
-        print(
-            "--------------------------->>>>>userID ",
-            winners,
-            " is winner with ",
-            winner[0][1],
-        )
-        return [winner, winners]
+            temp2[i].append(quota)
+        for i in reversed(range(len(temp2))):
+            if temp2[i][0][0] == 0:
+                temp2.pop(i)
+        # print("temp2: ", temp2)
+        result = []
+
+        while(game.pot):
+            t = 0
+            temp3 = []
+            count = [x[:2] for x in temp2].count(temp2[0][:2])
+            award = max(temp2[:count], key= lambda x:x[3])[3]
+            # print("award", award)
+            game.pot -= award
+            for x in temp2[count:]:
+                if x[3]>award:
+                    x[3] -= award
+                else:
+                    x[3] = 0
+            game.save()
+            while(t<count):
+                temp3.append(temp2.pop(0))
+                t += 1
+            try:
+                for i in range(len(temp2)):
+                    if temp2[i][3] == 0:
+                        temp2.pop(i)
+            except:
+                pass
+            temp3 = sorted(temp3, key=lambda x: x[3])
+            # print("temp2: ", temp2)
+            print("temp3: ", temp3)
+            win_amount = [0]*count
+            for i in range(count):
+                for j in range(count-i):
+                    win_amount[j+i] += temp3[i][3]/(count-i)-(temp3[i-1][3] if i >0 else 0)
+            print("win_amount: ", win_amount)
+            for i in range(len(temp3)):
+                if(win_amount[i]):
+                    result.append([temp3[i][2],win_amount[i],[temp3[i][0], temp3[i][1]]])
+                player = Player.objects.get(user=temp3[i][2])
+                player.balance += win_amount[i]
+                player.save()
+
+        # winner = []
+        # winners = []
+        # if [temp.count(temp[0])] == 1:
+        #     winner = list(
+        #         map(
+        #             lambda x: x[1],
+        #             # if Player.objects.get(user=game.JSON_data["orders"][x[0]])
+        #             # if Player.objects.get(user=x[2])
+        #             # else 0,
+        #             enumerate(temp),
+        #         )
+        #     )
+        # else:
+        #     winner = [temp[0]] * temp.count(temp[0])
+        # # print("winner: ", winner)
+        # if len(winner) == 1:
+        #     winners = [
+        #         game.JSON_data["orders"][game.JSON_data["card_winner"].index(winner[0])]
+        #     ]
+        # else:
+        #     for k in range(len(game.JSON_data["orders"])):
+        #         if game.JSON_data["card_winner"][k] == winner[0]:
+        #             winners.append(game.JSON_data["orders"][k])
+        print("result: ",result)
+        for winner in result:
+            systemlog = winner[0],winner[2][0][0],winner[1], winner[2][1]
+            async_to_sync(get_channel_layer().group_send)(
+                str(self.table._id), {"type": "finish", "systemlog": systemlog}
+            )
+
+        # print("--------------------------->>>>>userID ",winners," is winner with ",winner[0][1])
+        return result
 
     def evaluate(self, cards):
         cards = list(cards)

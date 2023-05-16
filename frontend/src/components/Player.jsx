@@ -48,8 +48,11 @@ function Player({ options, ended }) {
                 settitle('');
                 break
         }
-        if (ended) {
-            console.log(title)
+        if (options.status==1) {
+            setStatus('fold')
+        }
+        else 
+        {if (ended) {
             setStatus(title)
         }
         else {
@@ -73,7 +76,7 @@ function Player({ options, ended }) {
                     setStatus('');
                     break
             }
-        }
+        }}
 
     }, [options, status, gameDetails, ended])
 
@@ -133,7 +136,7 @@ function Winner({ options }) {
     return (
         <div className={((options.winner) ? ' winner' : ' d-none')} >
             <img src={Star} alt="Winner animation" />
-            <span>200€</span>
+            <span>+{options.win_amount}€</span>
         </div>
     )
 }

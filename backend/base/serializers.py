@@ -61,7 +61,7 @@ class GameSerializer(serializers.ModelSerializer):
         ]
 
     def get_player(self, obj):
-        if self.context["is_staff"]:
+        if self.context["is_staff"] or obj.isFinished:
             serializer = PlayerSerializer2(obj.player.all(), many=True)
         else:
             serializer = PlayerSerializer(obj.player.all(), many=True)

@@ -121,6 +121,7 @@ class Player(models.Model):
     small = models.BooleanField(default=False)
     big = models.BooleanField(default=False)
     winner = models.BooleanField(default=False)
+    win_amount = models.IntegerField(default=0)
     bet = models.IntegerField(default=0)
     image = models.ImageField(default="/avatar1.webp", upload_to=upload_path)
     card1 = models.IntegerField(default=0)
