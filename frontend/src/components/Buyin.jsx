@@ -28,13 +28,15 @@ function Buyin({ table }) {
     const userLogin = useSelector(state => state.userLogin)
     const { userInfo } = userLogin
 
-    const [deposite, setDeposite] = useState(0);
     const dispatch = useDispatch()
+    const [deposite, setDeposite] = useState(0);
+    const [aip, setaip] = useState(0);
 
-    
-    const context =useContext(MyContext)
+
+    const context = useContext(MyContext)
     const myDomain = hostname
     const [dd, setdd] = [context.dep, context.setdep]
+    const setai = context.setai
 
 
     useEffect(() => {
@@ -58,6 +60,7 @@ function Buyin({ table }) {
         e.preventDefault()
         dispatch(gameDetails(table._id))
         setdd(deposite)
+        setai(aip)
         navigate(`/poker/${table._id}`)
 
     }
@@ -75,7 +78,7 @@ function Buyin({ table }) {
 
     return (
         <Card className='shadow m-0 p-0 rounded overflow-hidden border-none'>
-            <img className='' style={{ height: "260px", objectFit: "cover" }} src={window.location.protocol + "//" + myDomain + table.img} alt={table.img} />
+            <img className='' style={{ height: "260px", objectFit: "cover" }} src={window.location.protocol + "//" + myDomain + "/django_static" + table.img} alt={table.img} />
             <Card.Body className='row pt-3'>
                 <div className='col-6 d-flex flex-column'>
                     <Card.Text className='text-start col-12 my-0 p-2'><strong>Type: </strong>{types[table.type]}</Card.Text>
@@ -87,7 +90,7 @@ function Buyin({ table }) {
                     <Card.Subtitle className='text-start col-12 my-0 p-2 d-flex flex-column justify-content-center'>
                         <strong className='w-100 text-center'>Players <span className='text-muted fw-light'>({gameInfo.info ? info.online : table.JSON_table.online.length}/{maxs[table.max]})</span> </strong>
                         <ul className='list-group px-4 list-group-flush'>
-                            {(((gameInfo!= null) && (gameInfo.info)) && (gameInfo.info.table)) && info.player.map(i => {
+                            {(((gameInfo != null) && (gameInfo.info)) && (gameInfo.info.table)) && info.player.map(i => {
                                 return (
                                     <li className='list-group-item d-flex justify-content-between' key={i.user}>
                                         <span>{i.nick_name}</span>
@@ -110,6 +113,15 @@ function Buyin({ table }) {
                             type="num"
                             placeholder="Amount"
                             onChange={(e) => (e.target.value == '') ? setDeposite(0) : setDeposite(parseInt(e.target.value))}
+                            autoFocus
+                        // size="lg"
+                        />
+                        <Form.Control
+                            className=''
+                            autoComplete='off'
+                            type="num"
+                            placeholder="AI"
+                            onChange={(e) => (e.target.value == '') ? setaip(0) : setaip(parseInt(e.target.value))}
                             autoFocus
                         // size="lg"
                         />

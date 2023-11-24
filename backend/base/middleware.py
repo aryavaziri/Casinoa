@@ -36,16 +36,16 @@ class JwtAuthMiddleware(BaseMiddleware):
             query = query.decode()
         if(query):
             query = query.split('&')
-
-        # if(query):
+        if(query):
+            query1 = query[0].split('=')
             query2 = query[1].split('=')
-            query = query[0].split('=')
-            # print(query2)
-            if(query[0]=="token"):
-                token = query[1]
+            query3 = query[2].split('=')
+            if(query1[0]=="token"):
+                token = query1[1]
             if(query2[0]=="deposite"):
                 deposite = query2[1]
-                # print(token)
+            if(query3[0]=="ai"):
+                ai = query3[1]
 
         # Try to authenticate the user
         try:
@@ -71,6 +71,7 @@ class JwtAuthMiddleware(BaseMiddleware):
             # Get the user using ID
             scope["user"] = await get_user(validated_token=decoded_data)
             scope["deposite"] = deposite
+            scope["ai"] = ai
         return await super().__call__(scope, receive, send)
 
 

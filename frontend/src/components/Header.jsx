@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Button from 'react-bootstrap/Button';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useLocation, useNavigate } from 'react-router'
-import { useEffect, useState , useContext} from 'react'
+import { useEffect, useState, useContext } from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { NavDropdown } from 'react-bootstrap';
@@ -13,7 +13,7 @@ import { logout } from '../actions/userActions';
 import { MyContext } from "../App.js"
 
 function Header() {
-  const context =useContext(MyContext)
+  const context = useContext(MyContext)
   // console.log(context)
   const myDomain = context.hostname
 
@@ -44,7 +44,7 @@ function Header() {
                     <div className='justify-content-center d-flex'>
                       {user[1] &&
                         <div className='border overflow-hidden rounded-circle' style={{ aspectRatio: "1/1", height: "30px" }}>
-                          <img className='h-100 w-100 border' style={{ objectFit: "cover" }} src={window.location.protocol + "//" + myDomain + user[1].image} alt={user[1].nick_name} />
+                          <img className='h-100 w-100 border' style={{ objectFit: "cover" }} src={window.location.protocol + "//" + myDomain + "/django_static" + user[1].image} alt={user[1].nick_name} />
                         </div>}
                     </div>
                   </Nav.Link>
@@ -67,8 +67,8 @@ function Header() {
                 </Nav.Link>
               </>
             ) :
-            <LinkContainer to='/login'>
-              <Nav.Link >Login <i className="fa-solid fa-right-to-bracket"></i></Nav.Link>
+              <LinkContainer to='/login'>
+                <Nav.Link >Login <i className="fa-solid fa-right-to-bracket"></i></Nav.Link>
               </LinkContainer>
             }
           </Nav>

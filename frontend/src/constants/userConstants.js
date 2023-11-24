@@ -4,9 +4,10 @@ export const USER_LOGIN_FAIL = 'USER_LOGIN_FAIL'
 
 export const USER_LOGOUT = 'USER_LOGOUT'
 let x
-if(process.env.NODE_ENV == "development"){
-    x = window.location.hostname + ":8000"
-} else {x = window.location.host}
+// if (process.env.NODE_ENV == "development") {
+//     x = window.location.hostname + ":8000"
+// } else 
+{ x = window.location.host }
 export const hostname = x
 
 export const USER_REGISTER_REQUEST = 'USER_REGISTER_REQUEST'

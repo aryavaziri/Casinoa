@@ -48,35 +48,36 @@ function Player({ options, ended }) {
                 settitle('');
                 break
         }
-        if (options.status==1) {
+        if (options.status == 1) {
             setStatus('fold')
         }
-        else 
-        {if (ended) {
-            setStatus(title)
-        }
         else {
-            switch (options.status) {
-                case 1:
-                    setStatus('fold');
-                    break
-                case 2:
-                    setStatus('check');
-                    break
-                case 3:
-                    setStatus('call');
-                    break
-                case 4:
-                    setStatus('raise');
-                    break
-                case 5:
-                    setStatus('allin');
-                    break
-                default:
-                    setStatus('');
-                    break
+            if (ended) {
+                setStatus(title)
             }
-        }}
+            else {
+                switch (options.status) {
+                    case 1:
+                        setStatus('fold');
+                        break
+                    case 2:
+                        setStatus('check');
+                        break
+                    case 3:
+                        setStatus('call');
+                        break
+                    case 4:
+                        setStatus('raise');
+                        break
+                    case 5:
+                        setStatus('allin');
+                        break
+                    default:
+                        setStatus('');
+                        break
+                }
+            }
+        }
 
     }, [options, status, gameDetails, ended])
 
@@ -93,7 +94,7 @@ function Player({ options, ended }) {
                     <img src={window.location.protocol +
                         "//" +
                         myDomain +
-                        `${options.image}`} />
+                        `/django_static${options.image}`} />
                     <div>
                         <div></div>
                         <div>

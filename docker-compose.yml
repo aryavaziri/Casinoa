@@ -8,17 +8,21 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - server_default
   redis:
     restart: unless-stopped
     image: redis
     command: redis-server
     ports:
       - "6379:6379"
+    networks:
+      - server_default
   django_daphne:
     restart: unless-stopped
     volumes:
-      - static:/backend/static/
       - ./backend:/backend
+      - static:/backend/static/
     env_file:
       - .env
     build:
@@ -28,32 +32,39 @@ services:
     depends_on:
       - db
       - redis
-  nginx:
+    networks:
+      - server_default
+  nginx_casinoa:
     restart: unless-stopped
     volumes:
       - static:/backend/static/
-    environment:
-      - CHOKIDAR_USEPOLLING=true
     build: ./nginx-node
     ports:
-      - "80:80"
+      - "81:81"
     depends_on:
-      - frontend
-  frontend:
+      - frontend_casinoa
+    networks:
+      - server_default
+  frontend_casinoa:
     restart: unless-stopped
     build: ./frontend
+    env_file:
+      - .env
     volumes:
       - ./frontend:/frontend
       - node_modules:/frontend/node_modules/
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
+      - "3030:3000"
     depends_on:
       - django_daphne
+    networks:
+      - server_default
+
 
 volumes:
   node_modules:
   static:
   postgres_data:
+networks:
+  server_default:
+    external: true

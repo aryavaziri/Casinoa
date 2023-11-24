@@ -16,11 +16,12 @@ export const MyContext = createContext({ hostname: hostname });
 
 export default function App() {
   const [dep, setdep] = useState(0);
+  const [ai, setai] = useState(0);
   return (
     <Router>
       <Header />
       <main className="">
-        <MyContext.Provider value={{ dep: dep, setdep: setdep }}>
+        <MyContext.Provider value={{ dep: dep, setdep: setdep, ai: ai, setai: setai }}>
           <Routes>
             <Route exact path="/" element={<HomeScreen />} />
             <Route path="/login" element={<LoginScreen />} />

@@ -37,6 +37,8 @@ class PokerConsumer(AsyncWebsocketConsumer):
         self.user = await self.get_user()
         self.table = self.scope["url_route"]["kwargs"]["pk"]
         self.deposite = self.scope["deposite"]
+        self.ai = self.scope["ai"]
+        print(self.ai)
         if self.user is AnonymousUser():
             self.close()
         else:

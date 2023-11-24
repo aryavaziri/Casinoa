@@ -33,15 +33,16 @@ import { hostname } from "../constants/userConstants";
 // let url = `ws://${window.location.hostname}:8000/ws/poker`
 // const pokerSocket = new WebSocket(url)
 
-const useSocket = (id, access_token, depo) => {
+const useSocket = (id, access_token, depo, ai) => {
   const [socket, setSocket] = useState();
   useEffect(() => {
+    // console.log("YES")
     if (!id || !access_token) return;
     // create socket
     try {
       setSocket(
         new WebSocket(
-          `ws://${hostname}/ws/poker/${id}/?token=${access_token}&deposite=${depo}`
+          `ws://${hostname}:8000/ws/poker/${id}/?token=${access_token}&deposite=${depo}&ai=${ai}`
         )
       );
     } catch {
@@ -73,7 +74,7 @@ function PokerScreen() {
 
   // console.log(context[0])
   const socketHeader = userInfo ? userInfo.access : "";
-  const socket = useSocket(id, socketHeader, context.dep);
+  const socket = useSocket(id, socketHeader, context.dep, context.ai);
 
   const { info, infoLoading } = gameInfo;
   const ground = [];
@@ -85,43 +86,43 @@ function PokerScreen() {
   let temp;
   let ended = info && info.isFinished;
 
-  const title = (title) =>{
+  const title = (title) => {
     console.log(title)
     switch (title) {
       case 1:
-          return 'High Card'
-          break
+        return 'High Card'
+        break
       case 2:
-          return 'Pair'
-          break
+        return 'Pair'
+        break
       case 3:
-          return 'Two pair'
-          break
+        return 'Two pair'
+        break
       case 4:
-          return 'Set'
-          break
+        return 'Set'
+        break
       case 5:
-          return 'Straight'
-          break
+        return 'Straight'
+        break
       case 6:
-          return 'Flush'
-          break
+        return 'Flush'
+        break
       case 7:
-          return 'FullHouse'
-          break
+        return 'FullHouse'
+        break
       case 8:
-          return 'Four of a kind'
-          break
+        return 'Four of a kind'
+        break
       case 9:
-          return 'Straight flush'
-          break
+        return 'Straight flush'
+        break
       case 10:
-          return 'Royal flush'
-          break
+        return 'Royal flush'
+        break
       default:
-          return ''
-          break
-  }
+        return ''
+        break
+    }
 
   }
 
@@ -149,7 +150,7 @@ function PokerScreen() {
         // }
         // document.querySelector("#chat-box").value +=
         //   temp + "\n";
-        document.querySelector("#chat-box").value += data.message[0]+" is "+ title(data.message[1]) +" and won "+data.message[2]+"€ with " + data.message[3] +"\n"
+        document.querySelector("#chat-box").value += data.message[0] + " is " + title(data.message[1]) + " and won " + data.message[2] + "€ with " + data.message[3] + "\n"
 
       }
       if (data && data.type == "chat") {
@@ -369,14 +370,14 @@ function PokerScreen() {
             <ul className="pt-3">
               {table.JSON_table.online.length > 0
                 ? table.JSON_table.online.map((v, i) => {
-                    return (
-                      <li key={i}>
-                        <p>
-                          {v[0]} - {v[1]}{" "}
-                        </p>
-                      </li>
-                    );
-                  })
+                  return (
+                    <li key={i}>
+                      <p>
+                        {v[0]} - {v[1]}{" "}
+                      </p>
+                    </li>
+                  );
+                })
                 : null}
             </ul>
             <div id="log"></div>

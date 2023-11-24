@@ -80,7 +80,8 @@ CHANNEL_LAYERS = {
         # "BACKEND": os.getenv('REDIS' ,"channels.layers.InMemoryChannelLayer"),
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "CONFIG": {"hosts": [(os.getenv("REDIS_CLOUD", ("localhost")))]},
-        "CONFIG": {"hosts": [(os.getenv("REDIS"), 6379)]},
+        # "CONFIG": {"hosts": [(os.getenv("REDIS"), 6379)]},
+        "CONFIG": {"hosts": [("REDIS", 6379)]},
     },
 }
 
@@ -130,6 +131,7 @@ DATABASES = {
 
 CSRF_TRUSTED_ORIGINS = [
     "http://www.casinoa.nl",
+    "http://www.casinoa.nl:81",
     "https://www.casinoa.nl",
     "http://localhost",
     "http://143.42.54.186",
