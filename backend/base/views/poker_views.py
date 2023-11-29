@@ -62,8 +62,16 @@ def action(request, pk):
     if action == "NewGame":
         try:
             if game.isFinished or request.user.is_staff:
-                if len(table.JSON_table["online"]) > 1:
-                    Poker(pk)
+                if len(table.JSON_table["online"]) < 2:
+                    bot = Player.objects.get(user=4)
+                    game.player.add(bot)
+                    bot.balance = 100
+                    bot.save()
+                    if 4 not in table.JSON_table["online"]:
+                        table.JSON_table["online"].append(4)
+                        table.save()
+
+                Poker(pk)
         except:
             if len(table.JSON_table["online"]) > 1:
                 Poker(pk)

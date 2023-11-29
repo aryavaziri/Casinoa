@@ -144,6 +144,14 @@ class Poker:
         async_to_sync(get_channel_layer().group_send)(
             str(self.table._id), {"type": "disp"}
         )
+        try:
+            if (Player.objects.get(user=self.game.turn).user.id==4):
+                print("random action")
+                self.randomize()
+        except:
+            pass
+
+
 
     def shuffle(self, count):
         self.cards = list(range(1, 53))
@@ -164,6 +172,8 @@ class Poker:
         order = self.game.JSON_data["orders"]
         pot = self.game.JSON_data["stage_pots"][-1]
         bet = self.game.bet
+        print("FROM USERACTION",action)
+
         if action == "leave":
             player = Player.objects.get(user=userID)
             player.credit_total += player.balance
@@ -256,6 +266,39 @@ class Poker:
             player.save()
             self.after()
 
+    def randomize(self):
+        order = self.game.JSON_data["orders"]
+        bet = self.game.bet
+        player = Player.objects.get(user=self.game.turn)
+        # Generate a random integer between 1 and 4
+        # random_value = random.randint(1, 5)
+        options = ["allin"]
+        if(bet<=player.balance-player.bet):
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+            options.append("check" if bet == player.bet else "call")
+        if((bet*2)<=player.balance):
+            options.append("raise")
+        if (bet>0):
+            options.append("fold")
+        randomAction = options[random.randint(0,len(options)-1)]
+        print(randomAction)
+        if(randomAction=="raise"):
+            new_bet = random.randint(bet*2,player.balance)
+            self.userAction("raise",4,new_bet)
+        else:
+            self.userAction(randomAction,4)
+
+
     def after(self):
         order = self.game.JSON_data["orders"]
         if self.game.JSON_data["actions"].count(0):
@@ -301,9 +344,8 @@ class Poker:
                     else:
                         self.game.JSON_data["allin_pots"][k] = 0
 
-            for i in range(
-                len(self.game.JSON_data["actions"])
-            ):  ##Reseting bets list to prepare it for the next round
+            ##Reseting bets list to prepare it for the next round
+            for i in range(len(self.game.JSON_data["actions"])): 
                 temp = Player.objects.get(user=order[i])
                 temp.bet = 0
                 if (
@@ -366,8 +408,16 @@ class Poker:
         async_to_sync(get_channel_layer().group_send)(
             str(self.table._id), {"type": "disp"}
         )
+        try:
+            if (Player.objects.get(user=self.game.turn).user.id==4):
+                print("random action")
+                self.randomize()
+        except:
+            pass
+        
 
     def onFinish(self):
+        table = Table.objects.get(_id=self.pk)
         game = self.game
         if game.JSON_data["allin_pots"].count(0) == game.player.count():
             game.JSON_data["allin_pots"] = [game.pot] * game.player.count()
@@ -385,6 +435,11 @@ class Poker:
                 player.save()
         game.save()
         print("Next game is going to start")
+        if 4 in table.JSON_table["online"]:
+            bot = Player.objects.get(user=4)
+            if bot.balance == 0:
+                bot.balance = 100
+                bot.save()
 
         async_to_sync(get_channel_layer().group_send)(
             str(self.table._id), {"type": "disp"}

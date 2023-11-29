@@ -6,13 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = bool(os.getenv("DEBUG", 0))
 
-
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "127.0.0.1:3000",
-    "78.135.89.244",
-    "143.42.54.186",
-    "172.104.226.97",
     "www.casinoa.nl",
     "casinoa.nl",
     "localhost",
@@ -134,10 +130,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://www.casinoa.nl:81",
     "https://www.casinoa.nl",
     "http://localhost",
-    "http://143.42.54.186",
-    "http://172.104.226.97",
-    "https://localhost",
-    "https://143.42.54.186",
 ]
 
 INTERNAL_IPS = [

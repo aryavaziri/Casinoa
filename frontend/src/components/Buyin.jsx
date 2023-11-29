@@ -29,15 +29,13 @@ function Buyin({ table }) {
     const { userInfo } = userLogin
 
     const dispatch = useDispatch()
-    const [deposite, setDeposite] = useState(0);
+    const [deposite, setDeposite] = useState(100);
     const [aip, setaip] = useState(0);
 
 
     const context = useContext(MyContext)
     const myDomain = hostname
     const [dd, setdd] = [context.dep, context.setdep]
-    const setai = context.setai
-
 
     useEffect(() => {
         console.log(!Object.keys(user).length)
@@ -60,7 +58,6 @@ function Buyin({ table }) {
         e.preventDefault()
         dispatch(gameDetails(table._id))
         setdd(deposite)
-        setai(aip)
         navigate(`/poker/${table._id}`)
 
     }
@@ -109,19 +106,11 @@ function Buyin({ table }) {
                     <Form.Group className="" controlId="email">
                         <Form.Control
                             className=''
+                            defaultValue={100}
                             autoComplete='off'
                             type="num"
                             placeholder="Amount"
                             onChange={(e) => (e.target.value == '') ? setDeposite(0) : setDeposite(parseInt(e.target.value))}
-                            autoFocus
-                        // size="lg"
-                        />
-                        <Form.Control
-                            className=''
-                            autoComplete='off'
-                            type="num"
-                            placeholder="AI"
-                            onChange={(e) => (e.target.value == '') ? setaip(0) : setaip(parseInt(e.target.value))}
                             autoFocus
                         // size="lg"
                         />

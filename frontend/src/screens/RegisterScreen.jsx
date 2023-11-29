@@ -60,7 +60,7 @@ function RegisterScreen() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 autoFocus
-                                />
+                            />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="name">
                             <Form.Label>Name</Form.Label>
@@ -70,7 +70,6 @@ function RegisterScreen() {
                                 placeholder="Enter your name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                autoFocus
                             />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="password">
@@ -82,7 +81,7 @@ function RegisterScreen() {
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                />
+                            />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="ConfrimPassword">
                             <Form.Label>Confirm password</Form.Label>
@@ -96,20 +95,20 @@ function RegisterScreen() {
                             />
                         </Form.Group>
                         <Button variant="outline-light" type="submit" className='w-100 py-2 rounded-3 h2 sign-in'>
-                                Register
-                            </Button>
+                            Register
+                        </Button>
                     </Form>
                     <br />
                     <Row className='my-4'>
-                            <Col className='col px-0'><hr /></Col>
-                            <Col className='col-auto'>
-                                Have an account?
-                                <Link className='text-decoration-none' to={'/login'}>
-                                    <span className='mx-2 h5 saeed-color'>Sign-in</span>
-                                </Link>
-                            </Col>
-                            <Col className='col px-0'><hr /></Col>
-                        </Row>
+                        <Col className='col px-0'><hr /></Col>
+                        <Col className='col-auto'>
+                            Have an account?
+                            <Link className='text-decoration-none' to={'/login'}>
+                                <span className='mx-2 h5 saeed-color'>Sign-in</span>
+                            </Link>
+                        </Col>
+                        <Col className='col px-0'><hr /></Col>
+                    </Row>
 
                 </FormContainer >
 

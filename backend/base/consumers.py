@@ -23,7 +23,7 @@ class PokerConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def add_online(self):
         table = Table.objects.get(_id=self.table)
-
+        game = Game.objects.filter(table=table).last()
         player = Player.objects.get(user=self.user["id"])
         if self.user["id"] not in table.JSON_table["online"]:
             table.JSON_table["online"].append(self.user["id"])
@@ -182,9 +182,18 @@ class PokerConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def gameLeave(self):
         table = Table.objects.get(_id=self.table)
+        game = Game.objects.filter(table=table).last()
         try:
             table.JSON_table["online"].remove(self.user["id"])
+            if 4 in table.JSON_table["online"] and len(table.JSON_table)==1:
+                table.JSON_table["online"].remove(4)
             table.save()
+            if 4 in table.JSON_table["online"] and len(table.JSON_table)==1:
+                table.JSON_table["online"].remove(4)
+                table.save()
+            if table.JSON_table["online"] < 2:
+                game.isFinished = True
+                game.save()
         except:
             print("BEGAYI INJAST")
             # pass

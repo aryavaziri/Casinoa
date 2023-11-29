@@ -3,11 +3,12 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Row, Col, Container, Modal } from 'react-bootstrap'
 import { listTables } from '../actions/tableActions'
+import { getUserDetails } from '../actions/userActions'
 import Table from '../components/Table'
 import Loader from '../components/Loader'
 import Message from '../components/Message'
 import Buyin from '../components/Buyin'
-import { useState ,useContext} from 'react'
+import { useState, useContext } from 'react'
 
 
 function HomeScreen() {
@@ -24,8 +25,14 @@ function HomeScreen() {
         setShow(true)
         setSelectedTable(i)
     }
+    const userLogin = useSelector(state => state.userLogin)
+    const { userInfo } = userLogin
+
     useEffect(() => {
         dispatch(listTables())
+        if (userInfo) {
+            dispatch(getUserDetails('profile'))
+        }
     }, [dispatch])
 
     return (
@@ -44,7 +51,8 @@ function HomeScreen() {
                                     < Col onClick={() => modalHandler(i)} sm={12} md={6} lg={4} key={i._id} >
                                         <Table table={i} />
                                     </Col>
-                                )})}
+                                )
+                            })}
                         </Row>
                 }
             </div>
